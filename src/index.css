@@ -27,13 +27,14 @@ body {
     radial-gradient(circle at 15% 50%, rgba(88, 166, 255, 0.08), transparent 25%),
     radial-gradient(circle at 85% 30%, rgba(163, 113, 247, 0.08), transparent 25%);
   background-attachment: fixed;
-  min-height: 100vh;
+  background-attachment: fixed;
+  min-height: 100dvh;
   margin: 0;
 }
 
 .layout {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
 }
@@ -485,10 +486,16 @@ body {
     overflow-y: auto;
   }
 
+  .code-block-wrapper {
+    flex: none;
+    overflow: visible;
+  }
+
   .code-block-wrapper .code-block {
     flex: none;
     border-right: none;
-    /* remove max-height so mobile users see full code natively */
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .mobile-details-btn {
