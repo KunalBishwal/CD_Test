@@ -692,6 +692,7 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState<'c_cpp' | 'c' | 'flex' | 'bison'>('c_cpp');
   const [toastMessage, setToastMessage] = useState('');
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
 
   const activeFolder = folders.find(f => f.id === activeFolderId);
   
@@ -750,6 +751,7 @@ function App() {
               className={"folder-item " + (activeFolderId === folder.id ? 'active' : '')}
               onClick={() => {
                 setActiveFolderId(folder.id);
+                setShowMobileDetails(false); // Reset instruction view on mobile
                 // Auto-close sidebar on mobile after selecting a folder
                 if (window.innerWidth <= 768) {
                   setIsSidebarOpen(false);
@@ -819,10 +821,19 @@ function App() {
               <pre className="code-block">
                 <code>{codeToRender}</code>
               </pre>
+              
+              {activeFolder?.details && (
+                <button 
+                  className="mobile-details-btn" 
+                  onClick={() => setShowMobileDetails(!showMobileDetails)}
+                >
+                  {showMobileDetails ? 'Hide Instructions' : 'View Instructions & Output'}
+                </button>
+              )}
             </div>
             
             {activeFolder?.details && (
-              <div className="details-pane">
+              <div className={"details-pane " + (showMobileDetails ? 'mobile-show' : '')}>
                 <div className="details-section">
                   <h3>File</h3>
                   <div><code className="inline-code">{activeFolder.details.file}</code></div>
