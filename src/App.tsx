@@ -1376,8 +1376,9 @@ function App() {
 
   // Resolve code based on whether the folder has language options or not
   const folderOptions = activeFolder?.options;
+  const optionsKeys = folderOptions ? Object.keys(folderOptions) : [];
   const codeToRender = folderOptions
-    ? (folderOptions[activeLanguage] || folderOptions[Object.keys(folderOptions)[0]])?.code
+    ? (folderOptions[activeLanguage] || folderOptions[optionsKeys[0]])?.code
     : activeFolder?.code;
 
   const toggleSidebar = () => {
@@ -1522,7 +1523,8 @@ function App() {
               <div className="language-selector">
                 {Object.keys(activeFolder.options).map(key => {
                   const opts = activeFolder.options!;
-                  const isActive = activeLanguage === key || (!opts[activeLanguage] && key === Object.keys(opts)[0]);
+                  const keys = Object.keys(opts);
+                  const isActive = activeLanguage === key || (!opts[activeLanguage] && key === keys[0]);
                   return (
                     <button
                       key={key}
