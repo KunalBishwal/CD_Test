@@ -1,7 +1,21 @@
 import { useState } from 'react';
 import './App.css';
 
-const folders = [
+interface Folder {
+  id: string;
+  name: string;
+  code?: string;
+  subfolders?: Folder[];
+  details?: {
+    file: string;
+    commands: string[];
+    input: string;
+    output: string;
+  };
+  options?: Record<string, { file: string; code: string }>;
+}
+
+const folders: Folder[] = [
   {
     id: 'exp3',
     name: 'EXP 3 — Lexical Analyzer',
@@ -43,6 +57,7 @@ Special Symbol: ;`
     }
   },
   {
+    id: 'exp4',
     name: 'EXP 4 — FLEX Programs',
     subfolders: [
       {
@@ -1337,7 +1352,7 @@ M[F,i] = F->i`
 ];
 
 function App() {
-  const [activeFolderId, setActiveFolderId] = useState(folders[0].id);
+  const [activeFolderId, setActiveFolderId] = useState<string>(folders[0].id);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [copied, setCopied] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState<'c_cpp' | 'c' | 'flex' | 'bison'>('c_cpp');
@@ -1346,7 +1361,7 @@ function App() {
   const [showMobileDetails, setShowMobileDetails] = useState(false);
 
   // Deep find to support subfolders
-  const findFolder = (fid: string, list: any[]): any => {
+  const findFolder = (fid: string, list: Folder[]): Folder | null => {
     for (const f of list) {
       if (f.id === fid) return f;
       if (f.subfolders) {
@@ -1360,8 +1375,9 @@ function App() {
   const activeFolder = findFolder(activeFolderId, folders);
 
   // Resolve code based on whether the folder has language options or not
-  const codeToRender = activeFolder?.options
-    ? activeFolder.options[activeLanguage as keyof typeof activeFolder.options]?.code || activeFolder.options[Object.keys(activeFolder.options)[0] as keyof typeof activeFolder.options]?.code
+  const folderOptions = activeFolder?.options;
+  const codeToRender = folderOptions
+    ? (folderOptions[activeLanguage] || folderOptions[Object.keys(folderOptions)[0]])?.code
     : activeFolder?.code;
 
   const toggleSidebar = () => {
@@ -1452,9 +1468,9 @@ function App() {
                   )}
                 </button>
                 
-                {hasSub && isExpanded && (
+                {hasSub && isExpanded && folder.subfolders && (
                   <div className="subfolder-list">
-                    {folder.subfolders.map((sub: any) => (
+                    {folder.subfolders.map((sub: Folder) => (
                       <button
                         key={sub.id}
                         className={"folder-item subfolder-item " + (activeFolderId === sub.id ? 'active' : '')}
@@ -1504,15 +1520,19 @@ function App() {
 
             {activeFolder?.options && (
               <div className="language-selector">
-                {Object.keys(activeFolder.options).map(key => (
-                  <button
-                    key={key}
-                    className={"lang-btn " + (activeLanguage === key || (!activeFolder.options[activeLanguage as keyof typeof activeFolder.options] && key === Object.keys(activeFolder.options)[0]) ? 'active' : '')}
-                    onClick={() => setActiveLanguage(key as any)}
-                  >
-                    {key === 'c_cpp' ? 'C++' : key === 'c' ? 'C' : key.toUpperCase()}
-                  </button>
-                ))}
+                {Object.keys(activeFolder.options).map(key => {
+                  const opts = activeFolder.options!;
+                  const isActive = activeLanguage === key || (!opts[activeLanguage] && key === Object.keys(opts)[0]);
+                  return (
+                    <button
+                      key={key}
+                      className={"lang-btn " + (isActive ? 'active' : '')}
+                      onClick={() => setActiveLanguage(key as any)}
+                    >
+                      {key === 'c_cpp' ? 'C++' : key === 'c' ? 'C' : key.toUpperCase()}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
