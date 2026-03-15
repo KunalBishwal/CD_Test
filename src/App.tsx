@@ -675,7 +675,7 @@ hello is not a keyword`
   },
   {
     id: 'exp5',
-    name: 'EXP 5 — Left Recursion',
+    name: 'EXP 5 — Left Recursion and Left Factoring',
     code: ``, // dynamic based on language
     options: {
       c_cpp: {
