@@ -897,38 +897,44 @@ S' -> bS | Sb`
       bison: {
         file: "calc.y",
         code: `%{
+%{
 #include<stdio.h>
 #include<stdlib.h>
+void yyerror(const char *s);
+int yylex();
 %}
 
 %token NUMBER
 
-%%
-
-input:
-expr { printf("Result = %d\\n",$1); }
-;
-
-expr:
-expr '+' expr { $$=$1+$3; }
-| expr '-' expr { $$=$1-$3; }
-| expr '*' expr { $$=$1*$3; }
-| expr '/' expr { $$=$1/$3; }
-| NUMBER { $$=$1; }
-;
+%left '+' '-'
+%left '*' '/'
 
 %%
+
+line:
+    exp '\n' { printf("Result = %d\n",$1); }
+    ;
+
+exp:
+      exp '+' exp { $$ = $1 + $3; }
+    | exp '-' exp { $$ = $1 - $3; }
+    | exp '*' exp { $$ = $1 * $3; }
+    | exp '/' exp { $$ = $1 / $3; }
+    | NUMBER { $$ = $1; }
+    ;
+
+%%
+
+void yyerror(const char *s)
+{
+    printf("Error\n");
+}
 
 int main()
 {
-printf("Enter expression:\\n");
-yyparse();
-}
-
-int yyerror(char *s)
-{
-printf("Error\\n");
-return 0;
+    printf("Enter expression:\n");
+    yyparse();
+    return 0;
 }`
       }
     },
