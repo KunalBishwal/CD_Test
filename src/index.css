@@ -129,6 +129,32 @@ body {
   box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.1);
 }
 
+.subfolder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+  margin-bottom: 8px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.subfolder-item {
+  font-size: 0.88rem !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  color: var(--text-secondary);
+}
+
+.subfolder-item:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.subfolder-item.active {
+  color: var(--accent-color);
+  background: rgba(88, 166, 255, 0.05);
+}
+
 .folder-item.active .folder-icon {
   fill: rgba(88, 166, 255, 0.2);
   transform: scale(1.05);
@@ -211,6 +237,7 @@ body {
   line-height: 1.6;
   color: #c9d1d9; /* Base GitHub Dark code color */
   text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
+  white-space: pre;
 }
 
 .split-view {

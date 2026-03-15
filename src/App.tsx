@@ -2,9 +2,9 @@ import { useState } from 'react';
 import './App.css';
 
 const folders = [
-  { 
-    id: 'exp3', 
-    name: 'EXP 3 — Lexical Analyzer', 
+  {
+    id: 'exp3',
+    name: 'EXP 3 — Lexical Analyzer',
     code: `%{
 #include <stdio.h>
 %}
@@ -42,42 +42,625 @@ Identifier: b
 Special Symbol: ;`
     }
   },
-  { 
-    id: 'exp4', 
-    name: 'EXP 4 — Capital Letter Count', 
-    code: `%{
+  {
+    name: 'EXP 4 — FLEX Programs',
+    subfolders: [
+      {
+        id: 'exp4_1',
+        name: '4.1 — Vowel or Not',
+        code: `%{
 #include <stdio.h>
-int count=0;
 %}
 
 %%
-[A-Z] { printf("%s capital\\n",yytext); count++; }
-[a-z] { printf("%s not capital\\n",yytext); }
-\\n return 0;
+
+[aAeEiIoOuU]     { printf("%s is a vowel\\n", yytext); }
+
+[a-zA-Z]         { printf("%s is not a vowel\\n", yytext); }
+
+\\n               return 0;
+
+.                ;
+
 %%
 
-int main(){
-printf("Enter text:\\n");
-yylex();
-printf("Total capitals = %d\\n",count);
+int main()
+{
+    printf("Enter characters:\\n");
+    yylex();
+    return 0;
 }
-int yywrap(){return 1;}`,
-    details: {
-      file: "capital.l",
-      commands: ["flex capital.l", "gcc lex.yy.c", "./a.out"],
-      input: "SRM university",
-      output: `S capital
-R capital
-M capital
-u not capital
-n not capital
-...
-Total capitals = 3`
-    }
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "vowel.l",
+          commands: ["flex vowel.l", "gcc lex.yy.c", "./a.out"],
+          input: `a
+b
+E
+k`,
+          output: `a is a vowel
+b is not a vowel
+E is a vowel
+k is not a vowel`
+        }
+      },
+      {
+        id: 'exp4_2',
+        name: '4.2 — Count Lines and Characters',
+        code: `%{
+#include <stdio.h>
+
+int lines = 0;
+int chars = 0;
+%}
+
+%%
+
+\\n        { lines++; chars++; }
+.         { chars++; }
+
+%%
+
+int main()
+{
+    printf("Enter text (Ctrl+D to stop):\\n");
+    yylex();
+
+    printf("Number of lines = %d\\n", lines);
+    printf("Number of characters = %d\\n", chars);
+
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "count.l",
+          commands: ["flex count.l", "gcc lex.yy.c", "./a.out"],
+          input: `Hello
+SRM
+University`,
+          output: `Number of lines = 3
+Number of characters = 19`
+        }
+      },
+      {
+        id: 'exp4_3',
+        name: '4.3 — Total Number of Characters',
+        code: `%{
+#include <stdio.h>
+int count = 0;
+%}
+
+%%
+
+.     { count++; }
+\\n    { count++; }
+
+%%
+
+int main()
+{
+    printf("Enter text:\\n");
+    yylex();
+
+    printf("Total characters = %d\\n", count);
+
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "totalchars.l",
+          commands: ["flex totalchars.l", "gcc lex.yy.c", "./a.out"],
+          input: `Hello 123`,
+          output: `Total characters = 9`
+        }
+      },
+      {
+        id: 'exp4_4',
+        name: '4.4 — Number of Words',
+        code: `%{
+#include <stdio.h>
+int words = 0;
+%}
+
+%%
+
+[a-zA-Z]+    { words++; }
+
+\\n           ;
+
+.            ;
+
+%%
+
+int main()
+{
+    printf("Enter text (Ctrl+D to stop):\\n");
+    yylex();
+
+    printf("Number of words = %d\\n", words);
+
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "wordcount.l",
+          commands: ["flex wordcount.l", "gcc lex.yy.c", "./a.out"],
+          input: `Hello SRM University`,
+          output: `Number of words = 3`
+        }
+      },
+      {
+        id: 'exp4_5',
+        name: '4.5 — Count Lines, Spaces and Tabs',
+        code: `%{
+#include <stdio.h>
+
+int lines = 0;
+int spaces = 0;
+int tabs = 0;
+%}
+
+%%
+
+\\n        { lines++; }
+
+" "       { spaces++; }
+
+\\t        { tabs++; }
+
+.         ;
+
+%%
+
+int main()
+{
+    printf("Enter text (Ctrl+D to stop):\\n");
+    yylex();
+
+    printf("Lines = %d\\n", lines);
+    printf("Spaces = %d\\n", spaces);
+    printf("Tabs = %d\\n", tabs);
+
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "line_space_tab.l",
+          commands: ["flex line_space_tab.l", "gcc lex.yy.c", "./a.out"],
+          input: `Hello SRM
+Compiler Design`,
+          output: `Lines = 2
+Spaces = 2
+Tabs = 0`
+        }
+      },
+      {
+        id: 'exp4_6',
+        name: '4.6 — Frequency of Given Word',
+        code: `%{
+#include <stdio.h>
+#include <string.h>
+
+int count = 0;
+char word[20];
+%}
+
+%%
+
+[a-zA-Z]+    {
+                if(strcmp(yytext, word) == 0)
+                    count++;
+             }
+
+\\n           ;
+
+.            ;
+
+%%
+
+int main()
+{
+    printf("Enter word to search: ");
+    scanf("%s", word);
+
+    printf("Enter text (Ctrl+D to stop):\\n");
+
+    yylex();
+
+    printf("Frequency of '%s' = %d\\n", word, count);
+
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "wordfreq.l",
+          commands: ["flex wordfreq.l", "gcc lex.yy.c", "./a.out"],
+          input: `Enter word to search: hello
+
+hello world hello srm hello`,
+          output: `Frequency of 'hello' = 3`
+        }
+      },
+      {
+        id: 'exp4_7',
+        name: '4.7 — Uppercase & Lowercase Letter',
+        code: `%{
+#include <stdio.h>
+%}
+
+%%
+
+[A-Z]     { printf("%s is uppercase\\n", yytext); }
+
+[a-z]     { printf("%s is lowercase\\n", yytext); }
+
+\\n        return 0;
+
+.         ;
+
+%%
+
+int main()
+{
+    printf("Enter characters:\\n");
+    yylex();
+
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "casecheck.l",
+          commands: ["flex casecheck.l", "gcc lex.yy.c", "./a.out"],
+          input: `A
+b
+C
+d`,
+          output: `A is uppercase
+b is lowercase
+C is uppercase
+d is lowercase`
+        }
+      },
+      {
+        id: 'exp4_8',
+        name: '4.8 — String is Digit or Word',
+        code: `%{
+#include <stdio.h>
+%}
+
+%%
+
+[0-9]+        { printf("%s is a digit\\n", yytext); }
+
+[a-zA-Z]+     { printf("%s is a word\\n", yytext); }
+
+\\n            return 0;
+
+.             { printf("%s unknown input\\n", yytext); }
+
+%%
+
+int main()
+{
+    printf("Enter string:\\n");
+    yylex();
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "digit_word.l",
+          commands: ["flex digit_word.l", "gcc lex.yy.c", "./a.out"],
+          input: `123
+hello`,
+          output: `123 is a digit
+hello is a word`
+        }
+      },
+      {
+        id: 'exp4_9',
+        name: '4.9 — Positive Closure',
+        code: `%{
+#include<stdio.h>
+%}
+
+%%
+
+a+    { printf("Positive closure matched: %s\\n", yytext); }
+
+\\n    return 0;
+
+.     ;
+
+%%
+
+int main()
+{
+    printf("Enter sequence:\\n");
+    yylex();
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "positive.l",
+          commands: ["flex positive.l", "gcc lex.yy.c", "./a.out"],
+          input: "aaa",
+          output: "Positive closure matched: aaa"
+        }
+      },
+      {
+        id: 'exp4_10',
+        name: '4.10 — Total Number of Tokens',
+        code: `%{
+#include<stdio.h>
+int tokens = 0;
+%}
+
+%%
+
+[a-zA-Z]+      { tokens++; }
+
+[0-9]+         { tokens++; }
+
+[+\\*/=]       { tokens++; }
+
+[ \\t\\n]        ;
+
+.              { tokens++; }
+
+%%
+
+int main()
+{
+    printf("Enter input:\\n");
+    yylex();
+
+    printf("Total tokens = %d\\n", tokens);
+}
+
+int yywrap()
+{
+    return 1;
+}`,
+        details: {
+          file: "tokens.l",
+          commands: ["flex tokens.l", "gcc lex.yy.c", "./a.out"],
+          input: "a = 10 + b",
+          output: "Total tokens = 5"
+        }
+      },
+      {
+        id: 'exp4_11',
+        name: '4.11 — Positive & Negative Numbers',
+        code: `%{
+#include<stdio.h>
+
+int pos = 0;
+int neg = 0;
+%}
+
+%%
+
+-[0-9]+     { neg++; printf("%s Negative number\\n", yytext); }
+
+[0-9]+      { pos++; printf("%s Positive number\\n", yytext); }
+
+\\n          return 0;
+
+.           ;
+
+%%
+
+int main()
+{
+    printf("Enter numbers:\\n");
+    yylex();
+
+    printf("Positive = %d\\n", pos);
+    printf("Negative = %d\\n", neg);
+
+    return 0;
+}
+
+int yywrap(){ return 1; }`,
+        details: {
+          file: "posneg.l",
+          commands: ["flex posneg.l", "gcc lex.yy.c", "./a.out"],
+          input: `10
+-5
+20
+-3`,
+          output: `10 Positive number
+-5 Negative number
+20 Positive number
+-3 Negative number
+Positive = 2
+Negative = 2`
+        }
+      },
+      {
+        id: 'exp4_12',
+        name: '4.12 — Identify Operators',
+        code: `%{
+#include<stdio.h>
+%}
+
+%%
+
+[+\\*/=]     { printf("%s is an operator\\n", yytext); }
+
+[a-zA-Z0-9]+ { printf("%s is not an operator\\n", yytext); }
+
+\\n           return 0;
+
+.            ;
+
+%%
+
+int main()
+{
+    printf("Enter input:\\n");
+    yylex();
+    return 0;
+}
+
+int yywrap(){ return 1; }`,
+        details: {
+          file: "operator.l",
+          commands: ["flex operator.l", "gcc lex.yy.c", "./a.out"],
+          input: `+
+a
+*`,
+          output: `+ is an operator
+a is not an operator
+* is an operator`
+        }
+      },
+      {
+        id: 'exp4_13',
+        name: '4.13 — Identify Identifier',
+        code: `%{
+#include<stdio.h>
+%}
+
+%%
+
+[a-zA-Z_][a-zA-Z0-9_]*   { printf("%s is an identifier\\n", yytext); }
+
+\\n                       return 0;
+
+.                        { printf("%s not identifier\\n", yytext); }
+
+%%
+
+int main()
+{
+    printf("Enter identifier:\\n");
+    yylex();
+    return 0;
+}
+
+int yywrap(){ return 1; }`,
+        details: {
+          file: "identifier.l",
+          commands: ["flex identifier.l", "gcc lex.yy.c", "./a.out"],
+          input: "count1",
+          output: "count1 is an identifier"
+        }
+      },
+      {
+        id: 'exp4_14',
+        name: '4.14 — Identify Number',
+        code: `%{
+#include<stdio.h>
+%}
+
+%%
+
+[0-9]+     { printf("%s is a number\\n", yytext); }
+
+[a-zA-Z]+  { printf("%s is not a number\\n", yytext); }
+
+\\n         return 0;
+
+.          ;
+
+%%
+
+int main()
+{
+    printf("Enter input:\\n");
+    yylex();
+    return 0;
+}
+
+int yywrap(){ return 1; }`,
+        details: {
+          file: "number.l",
+          commands: ["flex number.l", "gcc lex.yy.c", "./a.out"],
+          input: `123
+abc`,
+          output: `123 is a number
+abc is not a number`
+        }
+      },
+      {
+        id: 'exp4_15',
+        name: '4.15 — Identify Keyword',
+        code: `%{
+#include<stdio.h>
+%}
+
+%%
+
+"int"|"float"|"char"|"if"|"else"|"while"|"return"
+        { printf("%s is a keyword\\n", yytext); }
+
+[a-zA-Z]+
+        { printf("%s is not a keyword\\n", yytext); }
+
+\\n      return 0;
+
+.       ;
+
+%%
+
+int main()
+{
+    printf("Enter word:\\n");
+    yylex();
+    return 0;
+}
+
+int yywrap(){ return 1; }`,
+        details: {
+          file: "keyword.l",
+          commands: ["flex keyword.l", "gcc lex.yy.c", "./a.out"],
+          input: `int
+hello`,
+          output: `int is a keyword
+hello is not a keyword`
+        }
+      }
+    ]
   },
-  { 
-    id: 'exp5', 
-    name: 'EXP 5 — Left Recursion', 
+  {
+    id: 'exp5',
+    name: 'EXP 5 — Left Recursion',
     code: ``, // dynamic based on language
     options: {
       c_cpp: {
@@ -101,7 +684,7 @@ int main()
     vector<string> prod(n);
     vector<string> alpha, beta;
 
-    cout << "Enter productions (without A->) :\\n";
+    cout << "Enter productions (without A->):\\n";
 
     for(int i=0;i<n;i++)
     {
@@ -113,27 +696,68 @@ int main()
             beta.push_back(prod[i]);
     }
 
-    if(alpha.empty())
+    // -------- LEFT RECURSION --------
+    if(!alpha.empty())
     {
-        cout<<"No Left Recursion\\n";
+        cout<<"\\nGrammar after removing Left Recursion:\\n";
+
+        cout<<nonTerminal<<" -> ";
+
+        for(int i=0;i<beta.size();i++)
+            cout<<beta[i]<<nonTerminal<<"' | ";
+
+        cout<<"\\n";
+
+        cout<<nonTerminal<<"' -> ";
+
+        for(int i=0;i<alpha.size();i++)
+            cout<<alpha[i]<<nonTerminal<<"' | ";
+
+        cout<<"ε\\n";
+    }
+    else
+        cout<<"\\nNo Left Recursion found\\n";
+
+
+
+    // -------- LEFT FACTORING --------
+    cout<<"\\nChecking Left Factoring...\\n";
+
+    string prefix = prod[0];
+
+    for(int i=1;i<n;i++)
+    {
+        int j=0;
+
+        while(j < prefix.size() && j < prod[i].size() && prefix[j]==prod[i][j])
+            j++;
+
+        prefix = prefix.substr(0,j);
+    }
+
+    if(prefix.empty())
+    {
+        cout<<"No Left Factoring needed\\n";
         return 0;
     }
 
-    cout<<"\\nGrammar after removing Left Recursion:\\n";
+    cout<<"\\nGrammar after Left Factoring:\\n";
 
-    cout<<nonTerminal<<" -> ";
-
-    for(int i=0;i<beta.size();i++)
-        cout<<beta[i]<<nonTerminal<<"' | ";
-
-    cout<<"\\n";
+    cout<<nonTerminal<<" -> "<<prefix<<nonTerminal<<"'\\n";
 
     cout<<nonTerminal<<"' -> ";
 
-    for(int i=0;i<alpha.size();i++)
-        cout<<alpha[i]<<nonTerminal<<"' | ";
+    for(int i=0;i<n;i++)
+    {
+        string remain = prod[i].substr(prefix.length());
 
-    cout<<"ε\\n";
+        if(remain.empty())
+            cout<<"ε | ";
+        else
+            cout<<remain<<" | ";
+    }
+
+    cout<<endl;
 }`
       },
       c: {
@@ -144,11 +768,9 @@ int main()
 int main()
 {
     char nt;
-    char prod[10][20];
-    char alpha[10][20], beta[10][20];
-
-    int n,i;
-    int a=0,b=0;
+    char prod[10][20], alpha[10][20], beta[10][20];
+    char prefix[20], s1[20], s2[20];
+    int n,i,a=0,b=0;
 
     printf("Enter Non-Terminal: ");
     scanf(" %c",&nt);
@@ -174,40 +796,68 @@ int main()
         }
     }
 
-    printf("\\nAfter removing Left Recursion:\\n");
+    printf("\\nAfter Eliminating Left Recursion:\\n");
 
     printf("%c -> ",nt);
-
     for(i=0;i<b;i++)
-        printf("%s%c' | ",beta[i],nt);
+        printf("%s%c' ",beta[i],nt);
 
-    printf("\\n");
-
-    printf("%c' -> ",nt);
-
+    printf("\\n%c' -> ",nt);
     for(i=0;i<a;i++)
         printf("%s%c' | ",alpha[i],nt);
 
     printf("epsilon\\n");
+
+    printf("\\n----- Left Factoring -----\\n");
+
+    printf("Enter two productions for factoring:\\n");
+    scanf("%s %s",s1,s2);
+
+    int j=0;
+    while(s1[j]==s2[j])
+    {
+        prefix[j]=s1[j];
+        j++;
+    }
+    prefix[j]='\\0';
+
+    printf("Common Prefix: %s\\n",prefix);
+
+    printf("%c -> %s%c'\\n",nt,prefix,nt);
+    printf("%c' -> %s | %s\\n",nt,s1+j,s2+j);
+
+    return 0;
 }`
       }
     },
     details: {
       file: "leftrec.cpp / leftrec.c",
       commands: ["g++ leftrec.cpp", "gcc leftrec.c", "./a.out"],
-      input: `Enter Non-Terminal: E
+      input: `Example 1 (Left Recursion)
+Enter Non-Terminal: E
 Enter number of productions: 2
 E+T
-T`,
-      output: `After removing Left Recursion
-      
-E -> TE'
-E' -> +TE' | epsilon`
+T
+
+Example 2 (Left Factoring)
+Enter Non-Terminal: S
+Enter number of productions: 2
+abS
+aSb`,
+      output: `Example 1 Output:
+Grammar after removing Left Recursion:
+E -> TE' | 
+E' -> +TE' | ε
+
+Example 2 Output:
+Grammar after Left Factoring
+S -> aS'
+S' -> bS | Sb`
     }
   },
-  { 
-    id: 'exp6', 
-    name: 'EXP 6 — Calculator using FLEX + BISON', 
+  {
+    id: 'exp6',
+    name: 'EXP 6 — Calculator using FLEX + BISON',
     code: ``, // dynamic based on language
     options: {
       flex: {
@@ -274,9 +924,9 @@ return 0;
       output: "Result = 11"
     }
   },
-  { 
-    id: 'exp7', 
-    name: 'EXP 7 — Compute FIRST & FOLLOW', 
+  {
+    id: 'exp7',
+    name: 'EXP 7 — Compute FIRST & FOLLOW',
     code: ``, // dynamic based on language
     options: {
       c_cpp: {
@@ -453,9 +1103,9 @@ FOLLOW(T) = { + $ }
 FOLLOW(F) = { + $ }`
     }
   },
-  { 
-    id: 'exp8', 
-    name: 'EXP 8 — Predictive Parsing Table', 
+  {
+    id: 'exp8',
+    name: 'EXP 8 — Predictive Parsing Table',
     code: ``, // dynamic based on language
     options: {
       c_cpp: {
@@ -692,12 +1342,25 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState<'c_cpp' | 'c' | 'flex' | 'bison'>('c_cpp');
   const [toastMessage, setToastMessage] = useState('');
+  const [expandedFolders, setExpandedFolders] = useState<string[]>(['exp4']);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
 
-  const activeFolder = folders.find(f => f.id === activeFolderId);
-  
+  // Deep find to support subfolders
+  const findFolder = (fid: string, list: any[]): any => {
+    for (const f of list) {
+      if (f.id === fid) return f;
+      if (f.subfolders) {
+        const found = findFolder(fid, f.subfolders);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const activeFolder = findFolder(activeFolderId, folders);
+
   // Resolve code based on whether the folder has language options or not
-  const codeToRender = activeFolder?.options 
+  const codeToRender = activeFolder?.options
     ? activeFolder.options[activeLanguage as keyof typeof activeFolder.options]?.code || activeFolder.options[Object.keys(activeFolder.options)[0] as keyof typeof activeFolder.options]?.code
     : activeFolder?.code;
 
@@ -721,8 +1384,8 @@ function App() {
     <div className="layout">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
-        <div 
-          className="sidebar-overlay" 
+        <div
+          className="sidebar-overlay"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
@@ -732,7 +1395,7 @@ function App() {
         <div className="sidebar-header">
           <div className="logo">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
             </svg>
             <h2>My Notes</h2>
           </div>
@@ -745,25 +1408,75 @@ function App() {
         </div>
 
         <nav className="folder-list">
-          {folders.map(folder => (
-            <button 
-              key={folder.id} 
-              className={"folder-item " + (activeFolderId === folder.id ? 'active' : '')}
-              onClick={() => {
-                setActiveFolderId(folder.id);
-                setShowMobileDetails(false); // Reset instruction view on mobile
-                // Auto-close sidebar on mobile after selecting a folder
-                if (window.innerWidth <= 768) {
-                  setIsSidebarOpen(false);
-                }
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="folder-icon">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              </svg>
-              {folder.name}
-            </button>
-          ))}
+          {folders.map(folder => {
+            const isExpanded = expandedFolders.includes(folder.id);
+            const hasSub = folder.subfolders && folder.subfolders.length > 0;
+
+            const toggleExpand = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              if (expandedFolders.includes(folder.id)) {
+                setExpandedFolders(expandedFolders.filter(id => id !== folder.id));
+              } else {
+                setExpandedFolders([...expandedFolders, folder.id]);
+              }
+            };
+
+            return (
+              <div key={folder.id}>
+                <button
+                  className={"folder-item " + (activeFolderId === folder.id ? 'active' : '')}
+                  onClick={(e) => {
+                    if (hasSub) {
+                      toggleExpand(e);
+                      return;
+                    }
+                    setActiveFolderId(folder.id);
+                    setShowMobileDetails(false);
+                    if (window.innerWidth <= 768) setIsSidebarOpen(false);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="folder-icon">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                    </svg>
+                    {folder.name}
+                  </div>
+                  {hasSub && (
+                    <svg 
+                      onClick={toggleExpand}
+                      width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
+                    >
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  )}
+                </button>
+                
+                {hasSub && isExpanded && (
+                  <div className="subfolder-list">
+                    {folder.subfolders.map((sub: any) => (
+                      <button
+                        key={sub.id}
+                        className={"folder-item subfolder-item " + (activeFolderId === sub.id ? 'active' : '')}
+                        onClick={() => {
+                          setActiveFolderId(sub.id);
+                          setShowMobileDetails(false);
+                          if (window.innerWidth <= 768) setIsSidebarOpen(false);
+                        }}
+                        style={{ paddingLeft: '44px' }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="folder-icon">
+                          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                          <polyline points="13 2 13 9 20 9"></polyline>
+                        </svg>
+                        {sub.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
       </aside>
 
@@ -782,7 +1495,7 @@ function App() {
           </div>
           <div className="badge">Read-only Code</div>
         </div>
-        
+
         <div className="code-container glass-panel">
           <div className="mac-buttons" style={{ borderBottom: '1px solid var(--panel-border)', gridColumn: '1 / -1', position: 'relative' }}>
             <span className="mac-btn close"></span>
@@ -792,7 +1505,7 @@ function App() {
             {activeFolder?.options && (
               <div className="language-selector">
                 {Object.keys(activeFolder.options).map(key => (
-                  <button 
+                  <button
                     key={key}
                     className={"lang-btn " + (activeLanguage === key || (!activeFolder.options[activeLanguage as keyof typeof activeFolder.options] && key === Object.keys(activeFolder.options)[0]) ? 'active' : '')}
                     onClick={() => setActiveLanguage(key as any)}
@@ -803,7 +1516,7 @@ function App() {
               </div>
             )}
           </div>
-          
+
           <div className="split-view">
             <div className="code-block-wrapper">
               <button className="copy-btn absolute-copy" onClick={handleCopy} title="Copy to clipboard">
@@ -821,28 +1534,28 @@ function App() {
               <pre className="code-block">
                 <code>{codeToRender}</code>
               </pre>
-              
+
               {activeFolder?.details && (
-                <button 
-                  className="mobile-details-btn" 
+                <button
+                  className="mobile-details-btn"
                   onClick={() => setShowMobileDetails(!showMobileDetails)}
                 >
                   {showMobileDetails ? 'Hide Instructions' : 'View Instructions & Output'}
                 </button>
               )}
             </div>
-            
+
             {activeFolder?.details && (
               <div className={"details-pane " + (showMobileDetails ? 'mobile-show' : '')}>
                 <div className="details-section">
                   <h3>File</h3>
                   <div><code className="inline-code">{activeFolder.details.file}</code></div>
                 </div>
-                
+
                 <div className="details-section">
                   <h3>Run Commands</h3>
                   <div className="terminal-commands">
-                    {activeFolder.details.commands.map((cmd, i) => (
+                    {activeFolder.details.commands.map((cmd: string, i: number) => (
                       <div key={i} className="command-line">
                         <span className="prompt">$</span> {cmd}
                       </div>
