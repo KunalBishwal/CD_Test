@@ -92,7 +92,7 @@ int yywrap()
 }`,
         details: {
           file: "vowel.l",
-          commands: ["flex vowel.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex vowel.l", "gcc lex.yy.c -o vowel -lfl", "./vowel"],
           input: `a
 b
 E
@@ -137,7 +137,7 @@ int yywrap()
 }`,
         details: {
           file: "count.l",
-          commands: ["flex count.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex count.l", "gcc lex.yy.c -o count -lfl", "./count"],
           input: `Hello
 SRM
 University`,
@@ -176,7 +176,7 @@ int yywrap()
 }`,
         details: {
           file: "totalchars.l",
-          commands: ["flex totalchars.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex totalchars.l", "gcc lex.yy.c -o totalchars -lfl", "./totalchars"],
           input: `Hello 123`,
           output: `Total characters = 9`
         }
@@ -215,7 +215,7 @@ int yywrap()
 }`,
         details: {
           file: "wordcount.l",
-          commands: ["flex wordcount.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex wordcount.l", "gcc lex.yy.c -o wordcount -lfl", "./wordcount"],
           input: `Hello SRM University`,
           output: `Number of words = 3`
         }
@@ -261,7 +261,7 @@ int yywrap()
 }`,
         details: {
           file: "line_space_tab.l",
-          commands: ["flex line_space_tab.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex line_space_tab.l", "gcc lex.yy.c -o line_space_tab -lfl", "./line_space_tab"],
           input: `Hello SRM
 Compiler Design`,
           output: `Lines = 2
@@ -313,7 +313,7 @@ int yywrap()
 }`,
         details: {
           file: "wordfreq.l",
-          commands: ["flex wordfreq.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex wordfreq.l", "gcc lex.yy.c -o wordfreq -lfl", "./wordfreq"],
           input: `Enter word to search: hello
 
 hello world hello srm hello`,
@@ -353,7 +353,7 @@ int yywrap()
 }`,
         details: {
           file: "casecheck.l",
-          commands: ["flex casecheck.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex casecheck.l", "gcc lex.yy.c -o casecheck -lfl", "./casecheck"],
           input: `A
 b
 C
@@ -396,7 +396,7 @@ int yywrap()
 }`,
         details: {
           file: "digit_word.l",
-          commands: ["flex digit_word.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex digit_word.l", "gcc lex.yy.c -o digit_word -lfl", "./digit_word"],
           input: `123
 hello`,
           output: `123 is a digit
@@ -432,7 +432,7 @@ int yywrap()
 }`,
         details: {
           file: "positive.l",
-          commands: ["flex positive.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex positive.l", "gcc lex.yy.c -o positive -lfl", "./positive"],
           input: "aaa",
           output: "Positive closure matched: aaa"
         }
@@ -473,7 +473,7 @@ int yywrap()
 }`,
         details: {
           file: "tokens.l",
-          commands: ["flex tokens.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex tokens.l", "gcc lex.yy.c -o tokens -lfl", "./tokens"],
           input: "a = 10 + b",
           output: "Total tokens = 5"
         }
@@ -514,7 +514,7 @@ int main()
 int yywrap(){ return 1; }`,
         details: {
           file: "posneg.l",
-          commands: ["flex posneg.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex posneg.l", "gcc lex.yy.c -o posneg -lfl", "./posneg"],
           input: `10
 -5
 20
@@ -556,7 +556,7 @@ int main()
 int yywrap(){ return 1; }`,
         details: {
           file: "operator.l",
-          commands: ["flex operator.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex operator.l", "gcc lex.yy.c -o operator -lfl", "./operator"],
           input: `+
 a
 *`,
@@ -592,7 +592,7 @@ int main()
 int yywrap(){ return 1; }`,
         details: {
           file: "identifier.l",
-          commands: ["flex identifier.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex identifier.l", "gcc lex.yy.c -o identifier -lfl", "./identifier"],
           input: "count1",
           output: "count1 is an identifier"
         }
@@ -626,7 +626,7 @@ int main()
 int yywrap(){ return 1; }`,
         details: {
           file: "number.l",
-          commands: ["flex number.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex number.l", "gcc lex.yy.c -o number -lfl", "./number"],
           input: `123
 abc`,
           output: `123 is a number
@@ -664,7 +664,7 @@ int main()
 int yywrap(){ return 1; }`,
         details: {
           file: "keyword.l",
-          commands: ["flex keyword.l", "gcc lex.yy.c", "./a.out"],
+          commands: ["flex keyword.l", "gcc lex.yy.c -o keyword -lfl", "./keyword"],
           input: `int
 hello`,
           output: `int is a keyword
