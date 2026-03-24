@@ -1355,6 +1355,411 @@ M[T,i] = T->FY
 M[F,i] = F->i`
     }
   },
+  {
+    id: 'exp9',
+    name: 'EXP 9 — Shift Reduce Parsing',
+    code: ``, // dynamic based on language
+    options: {
+      c_cpp: {
+        file: "shiftreduce.cpp",
+        code: `#include <iostream>
+#include <stack>
+#include <string>
+using namespace std;
+
+string stackStr = "$";
+string inputStr;
+string production;
+
+void display(string action)
+{
+    cout << stackStr << "\\t\\t" << inputStr << "\\t\\t" << action << endl;
+}
+
+int main()
+{
+    int n;
+    cout << "Enter number of productions: ";
+    cin >> n;
+
+    cout << "Enter production (Example S->aSb): ";
+    cin >> production;
+
+    cout << "Enter input string: ";
+    cin >> inputStr;
+    inputStr += "$";
+
+    cout << "\\nStack\\t\\tInput\\t\\tAction\\n";
+    cout << "---------------------------------------------\\n";
+
+    display("Init");
+
+    while (true)
+    {
+        // SHIFT
+        stackStr += inputStr[0];
+        display("Shift " + string(1, inputStr[0]));
+        inputStr.erase(0, 1);
+
+        // REDUCE
+        string rhs = production.substr(3);
+        size_t pos = stackStr.find(rhs);
+
+        if (pos != string::npos)
+        {
+            stackStr.replace(pos, rhs.length(), string(1, production[0]));
+            display("Reduce " + production);
+        }
+
+        // ACCEPT
+        if (stackStr == "$" + string(1, production[0]) && inputStr == "$")
+        {
+            display("Accept");
+            break;
+        }
+
+        if (inputStr == "$" && stackStr != "$" + string(1, production[0]))
+        {
+            display("Reject");
+            break;
+        }
+    }
+
+    return 0;
+}`
+      },
+      c: {
+        file: "shiftreduce.c",
+        code: `#include <stdio.h>
+#include <string.h>
+
+char stack[50] = "$";
+char input[50];
+char production[20];
+
+void display(char action[])
+{
+    printf("%-15s %-15s %s\\n", stack, input, action);
+}
+
+int main()
+{
+    int n;
+    printf("Enter number of productions: ");
+    scanf("%d", &n);
+
+    printf("Enter production (Example S->aSb): ");
+    scanf("%s", production);
+
+    printf("Enter input string: ");
+    scanf("%s", input);
+    strcat(input, "$");
+
+    printf("\\nStack           Input           Action\\n");
+    printf("-------------------------------------------\\n");
+
+    display("Init");
+
+    while (1)
+    {
+        // SHIFT
+        char temp[20] = "Shift ";
+        int len = strlen(stack);
+        stack[len] = input[0];
+        stack[len + 1] = '\\0';
+
+        char shiftChar[2];
+        shiftChar[0] = input[0];
+        shiftChar[1] = '\\0';
+        strcat(temp, shiftChar);
+
+        memmove(input, input + 1, strlen(input));
+        display(temp);
+
+        // REDUCE
+        char rhs[20];
+        strcpy(rhs, production + 3);
+
+        char *pos = strstr(stack, rhs);
+        if (pos != NULL)
+        {
+            stack[pos - stack] = production[0];
+            stack[pos - stack + 1] = '\\0';
+
+            char reduceMsg[30] = "Reduce ";
+            strcat(reduceMsg, production);
+            display(reduceMsg);
+        }
+
+        // ACCEPT
+        if (strcmp(stack, "$S") == 0 && strcmp(input, "$") == 0)
+        {
+            display("Accept");
+            break;
+        }
+
+        // REJECT
+        if (strcmp(input, "$") == 0 && strcmp(stack, "$S") != 0)
+        {
+            display("Reject");
+            break;
+        }
+    }
+
+    return 0;
+}`
+      }
+    },
+    details: {
+      file: "shiftreduce.cpp / shiftreduce.c",
+      commands: ["g++ shiftreduce.cpp -o shiftreduce", "gcc shiftreduce.c -o shiftreduce", "./shiftreduce"],
+      input: `1
+S->aSb
+aabb`,
+      output: `Stack           Input           Action
+---------------------------------------------
+$               aabb$           Init
+$a              abb$            Shift a
+$aa             bb$             Shift a
+$aab            b$              Shift b
+$aS             b$              Reduce S->aSb
+$aSb            $               Shift b
+$S              $               Reduce S->aSb
+$S              $               Accept`
+    }
+  },
+  {
+    id: 'exp10',
+    name: 'EXP 10 — LR(0) Items Computation',
+    code: ``, // dynamic based on language
+    options: {
+      c_cpp: {
+        file: "lr0.cpp",
+        code: `#include <iostream>
+#include <vector>
+#include <set>
+#include <map>
+using namespace std;
+
+vector<string> productions;
+set<string> states[50];
+int stateCount = 0;
+
+set<string> closure(set<string> I)
+{
+    set<string> result = I;
+    bool added;
+
+    do {
+        added = false;
+        for (auto item : result)
+        {
+            int dotPos = item.find('.');
+            if (dotPos != string::npos && dotPos < item.length() - 1)
+            {
+                char symbol = item[dotPos + 1];
+
+                if (isupper(symbol))
+                {
+                    for (auto prod : productions)
+                    {
+                        if (prod[0] == symbol)
+                        {
+                            string newItem = symbol + string("->.") + prod.substr(3);
+                            if (result.insert(newItem).second)
+                                added = true;
+                        }
+                    }
+                }
+            }
+        }
+    } while (added);
+
+    return result;
+}
+
+set<string> gotoState(set<string> I, char X)
+{
+    set<string> J;
+
+    for (auto item : I)
+    {
+        int dotPos = item.find('.');
+        if (dotPos != string::npos && item[dotPos + 1] == X)
+        {
+            string newItem = item;
+            swap(newItem[dotPos], newItem[dotPos + 1]);
+            J.insert(newItem);
+        }
+    }
+
+    return closure(J);
+}
+
+int main()
+{
+    int n;
+    cout << "Enter number of productions: ";
+    cin >> n;
+
+    cout << "Enter productions:\\n";
+    for (int i = 0; i < n; i++)
+    {
+        string prod;
+        cin >> prod;
+        productions.push_back(prod);
+    }
+
+    // Augmented Grammar
+    string start = productions[0];
+    string augmented = string(1, start[0]) + "'->." + start[0];
+    productions.insert(productions.begin(), augmented);
+
+    cout << "\\nAugmented Grammar:\\n";
+    for (auto p : productions)
+        cout << p << endl;
+
+    // Initial State
+    set<string> I0;
+    I0.insert(augmented);
+    states[0] = closure(I0);
+    stateCount = 1;
+
+    cout << "\\nLR(0) Item Sets:\\n";
+
+    for (int i = 0; i < stateCount; i++)
+    {
+        cout << "\\nI" << i << ":\\n";
+        for (auto item : states[i])
+            cout << item << endl;
+
+        for (char X = 'A'; X <= 'Z'; X++)
+        {
+            set<string> newState = gotoState(states[i], X);
+            if (!newState.empty())
+            {
+                bool exists = false;
+                for (int k = 0; k < stateCount; k++)
+                {
+                    if (states[k] == newState)
+                        exists = true;
+                }
+
+                if (!exists)
+                {
+                    states[stateCount++] = newState;
+                }
+            }
+        }
+    }
+
+    return 0;
+}`
+      },
+      c: {
+        file: "lr0.c",
+        code: `#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+char productions[20][20];
+char states[50][50][20];
+int stateCount = 0;
+
+int contains(char state[][20], int n, char item[])
+{
+    for (int i = 0; i < n; i++)
+        if (strcmp(state[i], item) == 0)
+            return 1;
+    return 0;
+}
+
+int closure(char state[][20], int n)
+{
+    int added;
+    do {
+        added = 0;
+        for (int i = 0; i < n; i++)
+        {
+            char *dot = strchr(state[i], '.');
+            if (dot && isupper(*(dot + 1)))
+            {
+                char B = *(dot + 1);
+                for (int j = 0; j < stateCount; j++)
+                {
+                    if (productions[j][0] == B)
+                    {
+                        char newItem[20];
+                        sprintf(newItem, "%c->.%s", B, productions[j] + 3);
+
+                        if (!contains(state, n, newItem))
+                        {
+                            strcpy(state[n++], newItem);
+                            added = 1;
+                        }
+                    }
+                }
+            }
+        }
+    } while (added);
+
+    return n;
+}
+
+int main()
+{
+    int n;
+    printf("Enter number of productions: ");
+    scanf("%d", &n);
+
+    printf("Enter productions:\\n");
+    for (int i = 0; i < n; i++)
+        scanf("%s", productions[i]);
+
+    // Augmented grammar
+    char start = productions[0][0];
+    char augmented[20];
+    sprintf(augmented, "%c'->.%c", start, start);
+
+    printf("\\nAugmented Grammar:\\n%s\\n", augmented);
+    for (int i = 0; i < n; i++)
+        printf("%s\\n", productions[i]);
+
+    // Initial state
+    char I0[50][20];
+    int count = 0;
+    strcpy(I0[count++], augmented);
+
+    count = closure(I0, count);
+
+    printf("\\nI0:\\n");
+    for (int i = 0; i < count; i++)
+        printf("%s\\n", I0[i]);
+
+    return 0;
+}`
+      }
+    },
+    details: {
+      file: "lr0.cpp / lr0.c",
+      commands: ["g++ lr0.cpp -o lr0", "gcc lr0.c -o lr0", "./lr0"],
+      input: `3
+S->AA
+A->aA
+A->b`,
+      output: `Augmented Grammar:
+S'->.S
+S->AA
+A->aA
+A->b
+
+I0:
+S'->.S
+S->.AA
+A->.aA
+A->.b`
+    }
+  },
 ];
 
 function App() {
