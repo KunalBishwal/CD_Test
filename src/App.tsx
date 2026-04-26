@@ -1541,124 +1541,90 @@ $S              $               Accept`
     options: {
       c_cpp: {
         file: "lr0.cpp",
-        code: `#include <iostream>
-#include <vector>
-#include <set>
-#include <map>
+        code: `#include <bits/stdc++.h>
 using namespace std;
 
-vector<string> productions;
-set<string> states[50];
-int stateCount = 0;
+vector<string> prod;
 
-set<string> closure(set<string> I)
-{
-    set<string> result = I;
-    bool added;
+bool isNT(char c) { return c >= 'A' && c <= 'Z'; }
 
-    do {
-        added = false;
-        for (auto item : result)
-        {
-            int dotPos = item.find('.');
-            if (dotPos != string::npos && dotPos < item.length() - 1)
-            {
-                char symbol = item[dotPos + 1];
-
-                if (isupper(symbol))
-                {
-                    for (auto prod : productions)
-                    {
-                        if (prod[0] == symbol)
-                        {
-                            string newItem = symbol + string("->.") + prod.substr(3);
-                            if (result.insert(newItem).second)
-                                added = true;
-                        }
+// Closure
+set<string> closure(set<string> I) {
+    bool change = true;
+    while (change) {
+        change = false;
+        for (auto item : vector<string>(I.begin(), I.end())) {
+            int d = item.find('.');
+            if (d != string::npos && d + 1 < item.size() && isNT(item[d+1])) {
+                for (auto p : prod) {
+                    if (p[0] == item[d+1]) {
+                        string ni = string(1, p[0]) + "->." + p.substr(3);
+                        if (I.insert(ni).second) change = true;
                     }
                 }
             }
         }
-    } while (added);
-
-    return result;
+    }
+    return I;
 }
 
-set<string> gotoState(set<string> I, char X)
-{
-    set<string> J;
-
-    for (auto item : I)
-    {
-        int dotPos = item.find('.');
-        if (dotPos != string::npos && item[dotPos + 1] == X)
-        {
-            string newItem = item;
-            swap(newItem[dotPos], newItem[dotPos + 1]);
-            J.insert(newItem);
+// GOTO
+set<string> goTo(set<string> I, char X) {
+    set<string> R;
+    for (auto item : I) {
+        int d = item.find('.');
+        if (d != string::npos && d+1 < item.size() && item[d+1] == X) {
+            string t = item;
+            swap(t[d], t[d+1]);
+            R.insert(t);
         }
     }
-
-    return closure(J);
+    return closure(R);
 }
 
-int main()
-{
+int main() {
     int n;
     cout << "Enter number of productions: ";
     cin >> n;
 
     cout << "Enter productions:\\n";
-    for (int i = 0; i < n; i++)
-    {
-        string prod;
-        cin >> prod;
-        productions.push_back(prod);
+    for (int i = 0; i < n; i++) {
+        string s; cin >> s;
+        prod.push_back(s);
     }
 
-    // Augmented Grammar
-    string start = productions[0];
-    string augmented = string(1, start[0]) + "'->." + start[0];
-    productions.insert(productions.begin(), augmented);
+    // Augmented grammar
+    set<string> I0 = closure({ "Z->." + string(1, prod[0][0]) });
 
-    cout << "\\nAugmented Grammar:\\n";
-    for (auto p : productions)
-        cout << p << endl;
+    vector<set<string>> C = {I0};
+    queue<set<string>> q;
+    q.push(I0);
 
-    // Initial State
-    set<string> I0;
-    I0.insert(augmented);
-    states[0] = closure(I0);
-    stateCount = 1;
+    // Symbols
+    set<char> sym;
+    for (auto p : prod)
+        for (int i = 3; i < p.size(); i++)
+            sym.insert(p[i]);
 
-    cout << "\\nLR(0) Item Sets:\\n";
-
-    for (int i = 0; i < stateCount; i++)
-    {
-        cout << "\\nI" << i << ":\\n";
-        for (auto item : states[i])
-            cout << item << endl;
-
-        for (char X = 'A'; X <= 'Z'; X++)
-        {
-            set<string> newState = gotoState(states[i], X);
-            if (!newState.empty())
-            {
-                bool exists = false;
-                for (int k = 0; k < stateCount; k++)
-                {
-                    if (states[k] == newState)
-                        exists = true;
-                }
-
-                if (!exists)
-                {
-                    states[stateCount++] = newState;
-                }
+    // Canonical collection
+    while (!q.empty()) {
+        auto I = q.front(); q.pop();
+        for (char X : sym) {
+            auto g = goTo(I, X);
+            if (!g.empty() && find(C.begin(), C.end(), g) == C.end()) {
+                C.push_back(g);
+                q.push(g);
             }
         }
     }
 
+    // Output
+    cout << "\\nLR(0) Item Sets:\\n\\n";
+    for (int i = 0; i < C.size(); i++) {
+        cout << "I" << i << ":\\n";
+        for (auto s : C[i]) cout << s << endl;
+        cout << endl;
+    }
     return 0;
 }`
       },
@@ -1753,17 +1719,16 @@ int main()
 S->AA
 A->aA
 A->b`,
-      output: `Augmented Grammar:
-S'->.S
-S->AA
-A->aA
-A->b
+      output: `LR(0) Item Sets:
 
 I0:
-S'->.S
-S->.AA
 A->.aA
-A->.b`
+A->.b
+S->.AA
+Z->.S
+
+I1:
+Z->S.`
     }
   },
   {
