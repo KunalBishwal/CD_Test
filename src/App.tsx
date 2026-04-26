@@ -17,7 +17,11 @@ interface Folder {
 
 const folders: Folder[] = [
   {
-    id: 'exp3',
+    id: 'exp3_8',
+    name: '3-8 EXP',
+    subfolders: [
+      {
+        id: 'exp3',
     name: 'EXP 3 — Lexical Analyzer',
     code: `%{
 #include <stdio.h>
@@ -1354,6 +1358,8 @@ M[E,i] = E->TR
 M[T,i] = T->FY
 M[F,i] = F->i`
     }
+      }
+    ]
   },
   {
     id: 'exp9',
@@ -1760,6 +1766,186 @@ A->.aA
 A->.b`
     }
   },
+  {
+    id: 'exp11',
+    name: 'EXP 11 — Intermediate Code Generation',
+    code: ``,
+    options: {
+      c_cpp: {
+        file: "intermediate.cpp",
+        code: `#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string exp;
+    cout << "Enter expression: ";
+    cin >> exp;
+
+    char temp = '1';
+
+    cout << "\\n--- Quadruple ---\\n";
+    cout << "Op\\tArg1\\tArg2\\tResult\\n";
+
+    for (int i = 3; i < exp.length(); i += 2) {
+        cout << exp[i] << "\\t" << exp[i-1] << "\\t" << exp[i+1] << "\\tt" << temp << endl;
+        exp[i+1] = 't';
+        exp[i] = temp;
+        temp++;
+    }
+
+    cout << "\\n--- Triple ---\\n";
+    int index = 0;
+    for (int i = 3; i < exp.length(); i += 2) {
+        cout << "(" << index++ << ")\\t" << exp[i] << "\\t" << exp[i-1] << "\\t" << exp[i+1] << endl;
+    }
+
+    cout << "\\n--- Indirect Triple ---\\n";
+    for (int i = 0; i < index; i++) {
+        cout << "Pointer[" << i << "] -> (" << i << ")\\n";
+    }
+
+    return 0;
+}`
+      },
+      c: {
+        file: "intermediate.c",
+        code: `#include <stdio.h>
+#include <string.h>
+
+char temp = '1';
+
+void generate(char op, char op1, char op2) {
+    printf("t%c = %c %c %c\\n", temp, op1, op, op2);
+    temp++;
+}
+
+int main() {
+    char exp[20];
+    printf("Enter expression: ");
+    scanf("%s", exp);
+
+    char lhs = exp[0];
+
+    printf("\\n--- Quadruple ---\\n");
+    printf("Op\\tArg1\\tArg2\\tResult\\n");
+
+    temp = '1';
+    for (int i = 3; i < strlen(exp); i += 2) {
+        printf("%c\\t%c\\t%c\\tt%c\\n", exp[i], exp[i-1], exp[i+1], temp);
+        exp[i+1] = 't';
+        exp[i] = temp;
+        temp++;
+    }
+
+    printf("\\n--- Triple ---\\n");
+    temp = '1';
+    int index = 0;
+    for (int i = 3; i < strlen(exp); i += 2) {
+        printf("(%d)\\t%c\\t%c\\t%c\\n", index++, exp[i], exp[i-1], exp[i+1]);
+    }
+
+    printf("\\n--- Indirect Triple ---\\n");
+    for (int i = 0; i < index; i++) {
+        printf("Pointer[%d] -> (%d)\\n", i, i);
+    }
+
+    return 0;
+}`
+      }
+    },
+    details: {
+      file: "intermediate.cpp / intermediate.c",
+      commands: ["g++ intermediate.cpp -o intermediate", "gcc intermediate.c -o intermediate", "./intermediate"],
+      input: "a=b+c*d",
+      output: `Quadruple:
+*   c   d   t1
++   b   t1  t2
+
+Triple:
+(0) * c d
+(1) + b t1
+
+Indirect:
+Pointer[0] -> (0)
+Pointer[1] -> (1)`
+    }
+  },
+  {
+    id: 'exp12',
+    name: 'EXP 12 — Simple Code Generator',
+    code: ``,
+    options: {
+      c_cpp: {
+        file: "simple_codegen.cpp",
+        code: `#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string exp;
+    cout << "Enter expression: ";
+    cin >> exp;
+
+    cout << "\\n--- Simple Code Generation ---\\n";
+
+    for (int i = 3; i < exp.length(); i += 2) {
+        cout << "MOV R1, " << exp[i-1] << endl;
+        cout << "MOV R2, " << exp[i+1] << endl;
+
+        switch (exp[i]) {
+            case '+': cout << "ADD R1, R2\\n"; break;
+            case '-': cout << "SUB R1, R2\\n"; break;
+            case '*': cout << "MUL R1, R2\\n"; break;
+            case '/': cout << "DIV R1, R2\\n"; break;
+        }
+
+        cout << "MOV " << exp[0] << ", R1" << endl;
+    }
+
+    return 0;
+}`
+      },
+      c: {
+        file: "simple_codegen.c",
+        code: `#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char exp[20];
+    printf("Enter expression: ");
+    scanf("%s", exp);
+
+    printf("\\n--- Simple Code Generation ---\\n");
+
+    for (int i = 3; i < strlen(exp); i += 2) {
+        printf("MOV R1, %c\\n", exp[i-1]);
+        printf("MOV R2, %c\\n", exp[i+1]);
+
+        switch (exp[i]) {
+            case '+': printf("ADD R1, R2\\n"); break;
+            case '-': printf("SUB R1, R2\\n"); break;
+            case '*': printf("MUL R1, R2\\n"); break;
+            case '/': printf("DIV R1, R2\\n"); break;
+        }
+
+        printf("MOV %c, R1\\n", exp[0]);
+    }
+
+    return 0;
+}`
+      }
+    },
+    details: {
+      file: "simple_codegen.cpp / simple_codegen.c",
+      commands: ["g++ simple_codegen.cpp -o simple_codegen", "gcc simple_codegen.c -o simple_codegen", "./simple_codegen"],
+      input: "a=b+c",
+      output: `MOV R1, b
+MOV R2, c
+ADD R1, R2
+MOV a, R1`
+    }
+  },
 ];
 
 function App() {
@@ -1768,7 +1954,7 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState<'c_cpp' | 'c' | 'flex' | 'bison'>('c_cpp');
   const [toastMessage, setToastMessage] = useState('');
-  const [expandedFolders, setExpandedFolders] = useState<string[]>(['exp4']);
+  const [expandedFolders, setExpandedFolders] = useState<string[]>(['exp4', 'exp3_8']);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('theme');
